@@ -16,9 +16,6 @@ const result = dotenv.config()
 
 import fetch from 'node-fetch'; 
 
-const URL = 'https://api.track.toggl.com/api/v8/time_entries/start';
-const CURRENT_URL = `https://api.track.toggl.com/api/v8/time_entries/current`;
-
 function processTime(durationWorkedInSeconds){
   const duration = durationWorkedInSeconds * 1000;
   const SECOND = 1000;
@@ -30,13 +27,12 @@ function processTime(durationWorkedInSeconds){
   const minutesWorked = Math.floor((duration % HOUR) / MINUTE);
   const secondsWorked = Math.floor((duration % MINUTE) / SECOND);
   
-  return `${hoursWorked < 10 ? `0${hoursWorked}` : `${hoursWorked}`}:${minutesWorked < 10 ? `0${minutesWorked}` : `${minutesWorked}`}:${secondsWorked < 10 ? `0${secondsWorked}` : `${secondsWorked}`}`
+  return `${String(hoursWorked).padEnd(2, '0')}:${String(minutesWorked).padEnd(2, '0')}:${String(secondsWorked).padEnd(2, '0')}`;
 }
-
 
 function stopTimer(currentData){ 
 
-  fetch(`https://api.track.toggl.com/api/v8/time_entries/${currentData.id}/stop`, {
+  fetch(`${process.env.ENTRIES_URL}/${currentData.id}/stop`, {
     headers: {
         'Authorization': 'Basic ' + Buffer.from(`${process.env.API_TOKEN}:api_token`, 'binary').toString('base64')
     },
@@ -57,14 +53,14 @@ function stopTimer(currentData){
 }
 
 
-fetch('https://api.track.toggl.com/api/v8/time_entries/current', {
+fetch(`${process.env.ENTRIES_URL}/current`, {
   headers: {
     'Authorization': 'Basic ' + Buffer.from(`${process.env.API_TOKEN}:api_token`, 'binary').toString('base64')
   },
 })
   .then((response) => {
     if (!response.ok) {
-      throw new Error('Network response was not ok 1');
+      throw new Error('Network response was not ok');
     }
     return response.json();
   })
